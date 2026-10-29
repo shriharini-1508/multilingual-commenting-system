@@ -1,0 +1,22 @@
+{
+  "user-001": {
+    "video-1": {
+      "videoId": "video-1",
+      "userId": "user-001",
+      "completed": true,
+      "currentTime": 810,
+      "duration": 900,
+      "lastUpdated": 1793281671203,
+      "percent": 90
+    },
+    "video-2": {
+      "videoId": "video-2",
+      "userId": "user-001",
+      "completed": false,
+      "currentTime": 1,
+      "duration": 5,
+      "lastUpdated": 1793278472558,
+      "percent": 19.9
+    }
+  }
+}

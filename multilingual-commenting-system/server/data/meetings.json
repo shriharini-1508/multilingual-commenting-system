@@ -1,0 +1,765 @@
+{
+  "meet-general-01": {
+    "roomId": "meet-general-01",
+    "title": "Global Tech Discussion & Multi-Lang Sync",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": false,
+    "passcode": "1234",
+    "maxParticipants": 12,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1744100000000,
+    "participants": [
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent"
+      },
+      {
+        "userId": "user-003",
+        "userName": "Priya Sundaram",
+        "role": "co-host",
+        "isMuted": true,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "good"
+      }
+    ],
+    "recordings": []
+  },
+  "meet-f2zr-k6ay": {
+    "roomId": "meet-f2zr-k6ay",
+    "title": "Sprint Review & Code Walkthrough",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": true,
+    "passcode": "9988",
+    "maxParticipants": 10,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1791461568903,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1791461568903
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1791461568919
+      }
+    ],
+    "recordings": [
+      {
+        "id": "rec-1791461568937",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1791461568937,
+        "downloadUrl": "/recordings/meeting-meet-f2zr-k6ay.webm"
+      }
+    ]
+  },
+  "meet-n561-0vs9": {
+    "roomId": "meet-n561-0vs9",
+    "title": "Sprint Review & Code Walkthrough",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": true,
+    "passcode": "9988",
+    "maxParticipants": 10,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1791462669020,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1791462669020
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1791462669077
+      }
+    ],
+    "recordings": [
+      {
+        "id": "rec-1791462669127",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1791462669127,
+        "downloadUrl": "/recordings/meeting-meet-n561-0vs9.webm"
+      }
+    ]
+  },
+  "meet-hhib-9dbt": {
+    "roomId": "meet-hhib-9dbt",
+    "title": "Sprint Review & Code Walkthrough",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": true,
+    "passcode": "9988",
+    "maxParticipants": 10,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1791463534058,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1791463534058
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1791463534100
+      }
+    ],
+    "recordings": [
+      {
+        "id": "rec-1791463534163",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1791463534163,
+        "downloadUrl": "/recordings/meeting-meet-hhib-9dbt.webm"
+      }
+    ]
+  },
+  "meet-ue9x-omp2": {
+    "roomId": "meet-ue9x-omp2",
+    "title": "Sprint Review & Code Walkthrough",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": true,
+    "passcode": "9988",
+    "maxParticipants": 10,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1791464580016,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1791464580016
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1791464580071
+      }
+    ],
+    "recordings": [
+      {
+        "id": "rec-1791464580148",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1791464580148,
+        "downloadUrl": "/recordings/meeting-meet-ue9x-omp2.webm"
+      }
+    ]
+  },
+  "meet-vtir-8zlf": {
+    "roomId": "meet-vtir-8zlf",
+    "title": "Sprint Review & Code Walkthrough",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": true,
+    "passcode": "9988",
+    "maxParticipants": 10,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1792474659219,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1792474659219
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1792474659237
+      }
+    ],
+    "recordings": [
+      {
+        "id": "rec-1792474659255",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1792474659255,
+        "downloadUrl": "/recordings/meeting-meet-vtir-8zlf.webm"
+      }
+    ],
+    "chatMessages": []
+  },
+  "meet-klz2-uwrn": {
+    "roomId": "meet-klz2-uwrn",
+    "title": "Sprint Review & Code Walkthrough",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": true,
+    "passcode": "9988",
+    "maxParticipants": 10,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1792475410378,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1792475410378
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1792475410393
+      }
+    ],
+    "recordings": [
+      {
+        "id": "rec-1792475410410",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1792475410410,
+        "downloadUrl": "/recordings/meeting-meet-klz2-uwrn.webm"
+      }
+    ],
+    "chatMessages": []
+  },
+  "meet-dh1o-znhh": {
+    "roomId": "meet-dh1o-znhh",
+    "allowChat": true,
+    "allowScreenShare": true,
+    "chatMessages": [],
+    "createdAt": 1792476766006,
+    "hostName": "Shri Harini",
+    "hostUserId": "user-001",
+    "isLocked": true,
+    "maxParticipants": 10,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1792476766006
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1792476766220
+      }
+    ],
+    "passcode": "9988",
+    "recordings": [
+      {
+        "id": "rec-1792476766526",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1792476766526,
+        "downloadUrl": "/recordings/meeting-meet-dh1o-znhh.webm"
+      }
+    ],
+    "title": "Sprint Review & Code Walkthrough"
+  },
+  "meet-czwg-8zw4": {
+    "roomId": "meet-czwg-8zw4",
+    "allowChat": true,
+    "allowScreenShare": true,
+    "chatMessages": [],
+    "createdAt": 1792476925431,
+    "hostName": "Shri Harini",
+    "hostUserId": "user-001",
+    "isLocked": true,
+    "maxParticipants": 10,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1792476925431
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1792476925640
+      }
+    ],
+    "passcode": "9988",
+    "recordings": [
+      {
+        "id": "rec-1792476925958",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1792476925958,
+        "downloadUrl": "/recordings/meeting-meet-czwg-8zw4.webm"
+      }
+    ],
+    "title": "Sprint Review & Code Walkthrough"
+  },
+  "meet-1dtc-uhhn": {
+    "roomId": "meet-1dtc-uhhn",
+    "allowChat": true,
+    "allowScreenShare": true,
+    "chatMessages": [],
+    "createdAt": 1792479220483,
+    "hostName": "Shri Harini",
+    "hostUserId": "user-001",
+    "isLocked": true,
+    "maxParticipants": 10,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1792479220483
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1792479220770
+      }
+    ],
+    "passcode": "9988",
+    "recordings": [
+      {
+        "id": "rec-1792479221252",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1792479221252,
+        "downloadUrl": "/recordings/meeting-meet-1dtc-uhhn.webm"
+      }
+    ],
+    "title": "Sprint Review & Code Walkthrough"
+  },
+  "meet-h3hk-64t4": {
+    "roomId": "meet-h3hk-64t4",
+    "title": "Sprint Review & Code Walkthrough",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": true,
+    "passcode": "9988",
+    "maxParticipants": 10,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1793199809543,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793199809543
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793199809564
+      }
+    ],
+    "recordings": [
+      {
+        "id": "rec-1793199809581",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1793199809581,
+        "downloadUrl": "/recordings/meeting-meet-h3hk-64t4.webm"
+      }
+    ],
+    "chatMessages": []
+  },
+  "meet-92d1-t83c": {
+    "roomId": "meet-92d1-t83c",
+    "title": "Sprint Review & Code Walkthrough",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": true,
+    "passcode": "9988",
+    "maxParticipants": 10,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1793200644692,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793200644692
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793200644713
+      }
+    ],
+    "recordings": [
+      {
+        "id": "rec-1793200644737",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1793200644737,
+        "downloadUrl": "/recordings/meeting-meet-92d1-t83c.webm"
+      }
+    ],
+    "chatMessages": []
+  },
+  "meet-2owz-ti54": {
+    "roomId": "meet-2owz-ti54",
+    "title": "Multilingual Engineering Sync",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": false,
+    "passcode": "1234",
+    "maxParticipants": 12,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1793201472666,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793201472666
+      }
+    ],
+    "recordings": [],
+    "chatMessages": []
+  },
+  "meet-lpxn-g4so": {
+    "roomId": "meet-lpxn-g4so",
+    "title": "Multilingual Engineering Sync",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": false,
+    "passcode": "1234",
+    "maxParticipants": 12,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1793201505281,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793201505281
+      }
+    ],
+    "recordings": [],
+    "chatMessages": []
+  },
+  "meet-rk18-g6kt": {
+    "roomId": "meet-rk18-g6kt",
+    "title": "Test Meeting",
+    "hostUserId": "user-001",
+    "hostName": "Harini",
+    "isLocked": false,
+    "passcode": "1234",
+    "maxParticipants": 12,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1793203034907,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793203034907
+      }
+    ],
+    "recordings": [],
+    "chatMessages": []
+  },
+  "meet-r14h-li9z": {
+    "roomId": "meet-r14h-li9z",
+    "title": "Sprint Review & Code Walkthrough",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": true,
+    "passcode": "9988",
+    "maxParticipants": 10,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1793276025072,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793276025073
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793276025089
+      }
+    ],
+    "recordings": [
+      {
+        "id": "rec-1793276025109",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1793276025109,
+        "downloadUrl": "/recordings/meeting-meet-r14h-li9z.webm"
+      }
+    ],
+    "chatMessages": []
+  },
+  "meet-9gf7-n47x": {
+    "roomId": "meet-9gf7-n47x",
+    "allowChat": true,
+    "allowScreenShare": true,
+    "chatMessages": [],
+    "createdAt": 1793278167684,
+    "hostName": "Shri Harini",
+    "hostUserId": "user-001",
+    "isLocked": true,
+    "maxParticipants": 10,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793278167684
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793278167959
+      }
+    ],
+    "passcode": "9988",
+    "recordings": [
+      {
+        "id": "rec-1793278168300",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1793278168300,
+        "downloadUrl": "/recordings/meeting-meet-9gf7-n47x.webm"
+      }
+    ],
+    "title": "Sprint Review & Code Walkthrough"
+  },
+  "meet-7ub7-d6a2": {
+    "roomId": "meet-7ub7-d6a2",
+    "title": "Multilingual Engineering Sync",
+    "hostUserId": "user-001",
+    "hostName": "Shri Harini",
+    "isLocked": false,
+    "passcode": "1234",
+    "maxParticipants": 12,
+    "allowScreenShare": true,
+    "allowChat": true,
+    "createdAt": 1793278477979,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793278477979
+      }
+    ],
+    "recordings": [],
+    "chatMessages": []
+  },
+  "meet-6z4e-cx93": {
+    "roomId": "meet-6z4e-cx93",
+    "allowChat": true,
+    "allowScreenShare": true,
+    "chatMessages": [],
+    "createdAt": 1793281671323,
+    "hostName": "Shri Harini",
+    "hostUserId": "user-001",
+    "isLocked": true,
+    "maxParticipants": 10,
+    "participants": [
+      {
+        "userId": "user-001",
+        "userName": "Shri Harini",
+        "role": "host",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793281671323
+      },
+      {
+        "userId": "user-002",
+        "userName": "Arun Kumar",
+        "role": "participant",
+        "isMuted": false,
+        "isCameraOff": false,
+        "isHandRaised": false,
+        "connectionQuality": "excellent",
+        "joinedAt": 1793281671602
+      }
+    ],
+    "passcode": "9988",
+    "recordings": [
+      {
+        "id": "rec-1793281671920",
+        "name": "Sprint Review Recording",
+        "duration": "12:45",
+        "recordedBy": "Shri Harini",
+        "recordedAt": 1793281671920,
+        "downloadUrl": "/recordings/meeting-meet-6z4e-cx93.webm"
+      }
+    ],
+    "title": "Sprint Review & Code Walkthrough"
+  }
+}

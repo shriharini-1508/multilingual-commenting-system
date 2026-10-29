@@ -1,0 +1,155 @@
+{
+  "user-001": [
+    {
+      "deviceId": "device-desktop-01",
+      "deviceName": "Primary Workstation",
+      "browser": "Chrome",
+      "registeredAt": 1788969869124,
+      "lastUsedAt": 1789574669125
+    }
+  ],
+  "test-user-free": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1789574916830,
+      "lastUsedAt": 1789574916830
+    }
+  ],
+  "test-user-free-1789644580106": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1789644580470,
+      "lastUsedAt": 1789644580470
+    }
+  ],
+  "test-user-free-1791461273321": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1791461273363,
+      "lastUsedAt": 1791461273363
+    }
+  ],
+  "test-user-free-1791461581097": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1791461581168,
+      "lastUsedAt": 1791461581168
+    }
+  ],
+  "test-user-free-1791462689671": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1791462689751,
+      "lastUsedAt": 1791462689751
+    }
+  ],
+  "test-user-free-1791464554992": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1791464555140,
+      "lastUsedAt": 1791464555140
+    }
+  ],
+  "test-user-free-1792473752974": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1792473753161,
+      "lastUsedAt": 1792473753161
+    }
+  ],
+  "test-user-free-1792474574809": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1792474574855,
+      "lastUsedAt": 1792474574855
+    }
+  ],
+  "test-user-free-1792475371467": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1792475371498,
+      "lastUsedAt": 1792475371498
+    }
+  ],
+  "test-user-free-1792476734556": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1792476734908,
+      "lastUsedAt": 1792476734908
+    }
+  ],
+  "test-user-free-1792476871592": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1792476871878,
+      "lastUsedAt": 1792476871878
+    }
+  ],
+  "test-user-free-1792479323656": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1792479324129,
+      "lastUsedAt": 1792479324129
+    }
+  ],
+  "test-user-free-1793199770418": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1793199770539,
+      "lastUsedAt": 1793199770539
+    }
+  ],
+  "test-user-free-1793200601717": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1793200601755,
+      "lastUsedAt": 1793200601755
+    }
+  ],
+  "test-user-free-1793278141580": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1793278141817,
+      "lastUsedAt": 1793278141817
+    }
+  ],
+  "test-user-free-1793281685287": [
+    {
+      "deviceId": "dev-01",
+      "deviceName": "Standard Web Browser on Device",
+      "browser": "Standard Web Browser",
+      "registeredAt": 1793281685614,
+      "lastUsedAt": 1793281685614
+    }
+  ]
+}

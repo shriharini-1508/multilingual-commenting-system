@@ -1,0 +1,24 @@
+{
+  "user-001": {
+    "userId": "user-001",
+    "email": "harini@example.com",
+    "phone": "+91 98765 43210",
+    "themePreference": "auto",
+    "manualTheme": null,
+    "trustedDurationDays": 30,
+    "twoFactorEnabled": true,
+    "notifyOnNewLogin": true,
+    "failedOtpCount": 0
+  },
+  "user-002": {
+    "userId": "user-002",
+    "email": "arun@example.com",
+    "phone": "+91 98765 43211",
+    "themePreference": "auto",
+    "manualTheme": null,
+    "trustedDurationDays": 30,
+    "twoFactorEnabled": true,
+    "notifyOnNewLogin": true,
+    "failedOtpCount": 0
+  }
+}
