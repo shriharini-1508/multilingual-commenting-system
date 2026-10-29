@@ -18,7 +18,21 @@ async function runMongoCrudTest() {
     process.exit(1);
   }
 
-  const sanitizedUri = rawUri.replace(/<([^>]+)>/, "$1");
+  let sanitizedUri = rawUri.trim().replace(/^["']|["']$/g, "").replace(/<([^>]+)>/g, "$1");
+  const srvMatch = sanitizedUri.match(/^(mongodb(?:\+srv)?:\/\/)([^:]+):(.+)@([^/?#]+)(.*)$/);
+  if (srvMatch) {
+    const protocol = srvMatch[1];
+    const username = srvMatch[2];
+    let password = srvMatch[3];
+    const host = srvMatch[4];
+    const rest = srvMatch[5];
+    try {
+      password = encodeURIComponent(decodeURIComponent(password));
+    } catch {
+      password = encodeURIComponent(password);
+    }
+    sanitizedUri = `${protocol}${username}:${password}@${host}${rest}`;
+  }
   const maskedUri = sanitizedUri.replace(/:[^:]*@/, ":****@");
   console.log(`Connecting to: ${maskedUri}`);
 
@@ -26,7 +40,8 @@ async function runMongoCrudTest() {
   try {
     client = new MongoClient(sanitizedUri, {
       serverSelectionTimeoutMS: 15000,
-      connectTimeoutMS: 15000
+      connectTimeoutMS: 15000,
+      tls: true
     });
     await client.connect();
     console.log("✓ Live connection established to MongoDB Atlas!");

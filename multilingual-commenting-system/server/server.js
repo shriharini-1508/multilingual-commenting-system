@@ -10,10 +10,12 @@ import { MongoClient } from "mongodb";
 import nodemailer from "nodemailer";
 
 // Ensure DNS resolves MongoDB Atlas SRV records properly on Windows
-try {
-  dns.setServers(["8.8.8.8", "1.1.1.1", "8.8.4.4"]);
-} catch (dnsErr) {
-  console.log("DNS setServers note:", dnsErr.message);
+if (process.platform === "win32") {
+  try {
+    dns.setServers(["8.8.8.8", "1.1.1.1", "8.8.4.4"]);
+  } catch (dnsErr) {
+    console.log("DNS setServers note:", dnsErr.message);
+  }
 }
 
 const app = express();
@@ -300,9 +302,8 @@ function getMongoErrorAnalysis(errStr) {
   if (errStr.includes("SSL alert number 80") || errStr.includes("tlsv1 alert internal error")) {
     return {
       category: "TLS_HANDSHAKE_ERROR_SSL_ALERT_80",
-      reason: "Atlas TLS gateway rejected connection. Client IP address is not whitelisted in MongoDB Atlas Network Access IP Access List.",
-      detectedClientIp: "223.181.242.137",
-      actionRequired: "Open MongoDB Atlas Console -> Security -> Network Access -> Add IP Address -> Add 223.181.242.137."
+      reason: "Atlas TLS gateway rejected connection. The client IP is not whitelisted in MongoDB Atlas Network Access IP Access List. Cloud hosting platforms (like Render) use dynamic egress IP addresses.",
+      actionRequired: "Open MongoDB Atlas Console -> Security -> Network Access -> click '+ Add IP Address' -> select 'Allow Access From Anywhere' (0.0.0.0/0) -> Confirm."
     };
   }
   if (errStr.includes("Authentication failed") || errStr.includes("bad auth")) {
@@ -334,13 +335,28 @@ async function initMongoDB() {
     return;
   }
 
-  // Clean placeholder brackets e.g. <shri1919> -> shri1919
-  const sanitizedUri = rawUri.replace(/<([^>]+)>/, "$1");
+  // Robust URI Sanitization: strip quotes, trailing whitespace, and placeholder brackets
+  let sanitizedUri = rawUri.trim().replace(/^["']|["']$/g, "").replace(/<([^>]+)>/g, "$1");
+  const srvMatch = sanitizedUri.match(/^(mongodb(?:\+srv)?:\/\/)([^:]+):(.+)@([^/?#]+)(.*)$/);
+  if (srvMatch) {
+    const protocol = srvMatch[1];
+    const username = srvMatch[2];
+    let password = srvMatch[3];
+    const host = srvMatch[4];
+    const rest = srvMatch[5];
+    try {
+      password = encodeURIComponent(decodeURIComponent(password));
+    } catch {
+      password = encodeURIComponent(password);
+    }
+    sanitizedUri = `${protocol}${username}:${password}@${host}${rest}`;
+  }
 
   try {
     mongoClient = new MongoClient(sanitizedUri, {
       serverSelectionTimeoutMS: 15000,
-      connectTimeoutMS: 15000
+      connectTimeoutMS: 15000,
+      tls: true
     });
     await mongoClient.connect();
     db = mongoClient.db("subscription_system");
