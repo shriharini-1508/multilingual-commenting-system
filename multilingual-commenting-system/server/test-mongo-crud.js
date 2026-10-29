@@ -2,9 +2,9 @@ import { MongoClient } from "mongodb";
 import "dotenv/config";
 import dns from "dns";
 
-// Fix Windows c-ares loopback DNS issue
+// Ensure DNS resolves MongoDB Atlas SRV records properly
 try {
-  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+  dns.setServers(["8.8.8.8", "1.1.1.1", "8.8.4.4"]);
 } catch (e) { }
 
 async function runMongoCrudTest() {
@@ -18,55 +18,24 @@ async function runMongoCrudTest() {
     process.exit(1);
   }
 
-  let sanitizedUri = rawUri.trim().replace(/^["']|["']$/g, "").replace(/<([^>]+)>/g, "$1");
-  const srvMatch = sanitizedUri.match(/^(mongodb(?:\+srv)?:\/\/)([^:]+):(.+)@([^/?#]+)(.*)$/);
-  let parsedUser = "";
-  let parsedPass = "";
-  if (srvMatch) {
-    const protocol = srvMatch[1];
-    parsedUser = srvMatch[2];
-    parsedPass = srvMatch[3];
-    const host = srvMatch[4];
-    const rest = srvMatch[5];
-    try {
-      parsedPass = encodeURIComponent(decodeURIComponent(parsedPass));
-    } catch {
-      parsedPass = encodeURIComponent(parsedPass);
-    }
-    sanitizedUri = `${protocol}${parsedUser}:${parsedPass}@${host}${rest}`;
-  }
+  const sanitizedUri = rawUri.trim().replace(/^["']|["']$/g, "").replace(/<([^>]+)>/g, "$1");
   const maskedUri = sanitizedUri.replace(/:[^:]*@/, ":****@");
   console.log(`Connecting to: ${maskedUri}`);
 
   let client = null;
   try {
-    try {
-      client = new MongoClient(sanitizedUri, {
-        family: 4,
-        serverSelectionTimeoutMS: 15000,
-        connectTimeoutMS: 15000,
-        tls: true
-      });
-      await client.connect();
-      console.log("✓ Live connection established to MongoDB Atlas!");
-    } catch (err) {
-      console.warn(`Primary connection failed (${err.message}). Trying direct replica-set fallback...`);
-      if (sanitizedUri.includes("cluster0.lslab9n.mongodb.net")) {
-        const directUri = `mongodb://${parsedUser}:${parsedPass}@ac-opuscjt-shard-00-00.lslab9n.mongodb.net:27017,ac-opuscjt-shard-00-01.lslab9n.mongodb.net:27017,ac-opuscjt-shard-00-02.lslab9n.mongodb.net:27017/subscription_system?ssl=true&replicaSet=atlas-3e9yys-shard-0&authSource=admin&retryWrites=true&w=majority`;
-        client = new MongoClient(directUri, {
-          family: 4,
-          serverSelectionTimeoutMS: 15000,
-          connectTimeoutMS: 15000,
-          tls: true
-        });
-        await client.connect();
-        console.log("✓ Live connection established to MongoDB Atlas via direct replica-set fallback!");
-      } else {
-        throw err;
-      }
-    }
+    client = new MongoClient(sanitizedUri, {
+      family: 4,
+      serverSelectionTimeoutMS: 8000,
+      connectTimeoutMS: 8000
+    });
+    await client.connect();
+    console.log("✓ Live connection established to MongoDB Atlas!");
 
     const db = client.db("subscription_system");
+    await db.command({ ping: 1 });
+    console.log("✓ Authenticated ping succeeded against subscription_system!");
+
     const testColl = db.collection("_crud_probe_test");
 
     // 1. Create (Insert)
@@ -74,7 +43,7 @@ async function runMongoCrudTest() {
     console.log(`\n1. Testing CREATE (Insert probe document: ${probeId})...`);
     const insertRes = await testColl.insertOne({
       id: probeId,
-      purpose: "Antigravity live database CRUD test",
+      purpose: "Live database CRUD test",
       timestamp: Date.now()
     });
     console.log(`✓ Inserted with _id: ${insertRes.insertedId}`);

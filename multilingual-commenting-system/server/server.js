@@ -9,13 +9,11 @@ import "dotenv/config";
 import { MongoClient } from "mongodb";
 import nodemailer from "nodemailer";
 
-// Ensure DNS resolves MongoDB Atlas SRV records properly on Windows
-if (process.platform === "win32") {
-  try {
-    dns.setServers(["8.8.8.8", "1.1.1.1", "8.8.4.4"]);
-  } catch (dnsErr) {
-    console.log("DNS setServers note:", dnsErr.message);
-  }
+// Ensure DNS resolves MongoDB Atlas SRV records properly across all platforms
+try {
+  dns.setServers(["8.8.8.8", "1.1.1.1", "8.8.4.4"]);
+} catch (dnsErr) {
+  console.log("DNS setServers note:", dnsErr.message);
 }
 
 const app = express();
@@ -296,49 +294,34 @@ let meetingsColl = null;
 let meetingChatsColl = null;
 let isMongoConnected = false;
 let mongoLastError = null;
-let detectedServerIp = null;
-
-async function getEgressIp() {
-  if (detectedServerIp) return detectedServerIp;
-  try {
-    const res = await fetch("https://api.ipify.org?format=json", { signal: AbortSignal.timeout(4000) });
-    if (res.ok) {
-      const data = await res.json();
-      detectedServerIp = data.ip;
-      return detectedServerIp;
-    }
-  } catch (e) { }
-  return null;
-}
 
 function getMongoErrorAnalysis(errStr) {
   if (!errStr) return null;
   if (errStr.includes("SSL alert number 80") || errStr.includes("tlsv1 alert internal error")) {
     return {
       category: "TLS_HANDSHAKE_ERROR_SSL_ALERT_80",
-      reason: "Atlas TLS gateway rejected the connection. The server IP address is not whitelisted in MongoDB Atlas Network Access IP Access List.",
-      detectedEgressIp: detectedServerIp || "Dynamic Cloud Egress IP",
-      actionRequired: `In MongoDB Atlas Console -> Security -> Network Access -> click '+ Add IP Address' -> select 'Allow Access From Anywhere' (0.0.0.0/0)${detectedServerIp ? ` or add '${detectedServerIp}'` : ''} -> Confirm.`
+      reason: "MongoDB Atlas rejected the TLS handshake. This occurs when the incoming client IP address is not authorized in Atlas Network Access.",
+      actionRequired: "Go to MongoDB Atlas -> Security -> Network Access -> Add IP Address -> Select 'Allow Access From Anywhere' (0.0.0.0/0) -> Confirm."
     };
   }
   if (errStr.includes("Authentication failed") || errStr.includes("bad auth")) {
     return {
       category: "AUTH_FAILURE",
       reason: "MongoDB database credentials rejected.",
-      actionRequired: "Verify database username and password in .env MONGO_URI."
+      actionRequired: "Verify database username and password in MONGO_URI in Render dashboard."
     };
   }
   if (errStr.includes("ENOTFOUND") || errStr.includes("querySrv")) {
     return {
       category: "DNS_RESOLUTION_ERROR",
       reason: "Unable to resolve MongoDB Atlas SRV record.",
-      actionRequired: "Check internet connection and DNS servers (8.8.8.8, 1.1.1.1)."
+      actionRequired: "Ensure DNS servers are reachable or use standard non-SRV connection string."
     };
   }
   return {
     category: "CONNECTION_FAILED",
     reason: errStr,
-    actionRequired: "Check MongoDB Atlas cluster status and network configuration."
+    actionRequired: "Check MongoDB Atlas cluster status and network access."
   };
 }
 
@@ -346,77 +329,27 @@ async function initMongoDB() {
   if (isMongoConnected) return;
   const rawUri = process.env.MONGO_URI;
   if (!rawUri) {
-    console.warn("⚠️ MONGO_URI not found in environment. Running on persistent local storage fallback.");
+    console.warn("⚠️ MONGO_URI not found in environment. Database running in local fallback mode.");
     return;
   }
 
-  // Detect server egress IP in parallel
-  getEgressIp().catch(() => {});
-
-  // Robust URI Sanitization: strip quotes, trailing whitespace, and placeholder brackets
+  // Clean surrounding quotes and placeholder brackets
   let sanitizedUri = rawUri.trim().replace(/^["']|["']$/g, "").replace(/<([^>]+)>/g, "$1");
-  const srvMatch = sanitizedUri.match(/^(mongodb(?:\+srv)?:\/\/)([^:]+):(.+)@([^/?#]+)(.*)$/);
-  let parsedUser = "";
-  let parsedPass = "";
-  let parsedHost = "";
-  let parsedRest = "";
-
-  if (srvMatch) {
-    const protocol = srvMatch[1];
-    parsedUser = srvMatch[2];
-    parsedPass = srvMatch[3];
-    parsedHost = srvMatch[4];
-    parsedRest = srvMatch[5];
-    try {
-      parsedPass = encodeURIComponent(decodeURIComponent(parsedPass));
-    } catch {
-      parsedPass = encodeURIComponent(parsedPass);
-    }
-    sanitizedUri = `${protocol}${parsedUser}:${parsedPass}@${parsedHost}${parsedRest}`;
-  }
-
   const maskedUri = sanitizedUri.replace(/:[^:]*@/, ":****@");
-  console.log(`[MongoConnection] Attempting connection to Atlas: ${maskedUri}`);
-
-  async function attemptConnect(uriToTry, label) {
-    const client = new MongoClient(uriToTry, {
-      family: 4,
-      tls: true,
-      serverSelectionTimeoutMS: 15000,
-      connectTimeoutMS: 15000
-    });
-    await client.connect();
-    await client.db("subscription_system").admin().ping();
-    return client;
-  }
-
-  let connectedClient = null;
-  let primaryError = null;
+  console.log(`[MongoConnection] Connecting to MongoDB Atlas: ${maskedUri}`);
 
   try {
-    connectedClient = await attemptConnect(sanitizedUri, "Primary URI");
-    console.log("✓ Primary MongoDB connection established successfully!");
-  } catch (err) {
-    primaryError = err;
-    console.warn(`[MongoConnection] Primary connection attempt failed: ${err.message}`);
+    mongoClient = new MongoClient(sanitizedUri, {
+      family: 4,
+      serverSelectionTimeoutMS: 8000,
+      connectTimeoutMS: 8000
+    });
+    await mongoClient.connect();
 
-    // If connecting with SRV to cluster0, attempt direct replica-set seed fallback
-    if (sanitizedUri.includes("cluster0.lslab9n.mongodb.net")) {
-      const directUri = `mongodb://${parsedUser}:${parsedPass}@ac-opuscjt-shard-00-00.lslab9n.mongodb.net:27017,ac-opuscjt-shard-00-01.lslab9n.mongodb.net:27017,ac-opuscjt-shard-00-02.lslab9n.mongodb.net:27017/subscription_system?ssl=true&replicaSet=atlas-3e9yys-shard-0&authSource=admin&retryWrites=true&w=majority`;
-      const maskedDirect = directUri.replace(/:[^:]*@/, ":****@");
-      console.log(`[MongoConnection] Attempting direct replica-set seed fallback: ${maskedDirect}...`);
-      try {
-        connectedClient = await attemptConnect(directUri, "Direct Replica Set");
-        console.log("✓ Direct replica-set fallback connected successfully to Atlas!");
-      } catch (fallbackErr) {
-        console.error(`[MongoConnection] Direct fallback also failed: ${fallbackErr.message}`);
-      }
-    }
-  }
-
-  if (connectedClient) {
-    mongoClient = connectedClient;
+    // Verify authenticated connectivity with ping command
     db = mongoClient.db("subscription_system");
+    await db.command({ ping: 1 });
+
     commentsColl = db.collection("comments");
     commentReportsColl = db.collection("comment_reports");
     commentHistoryColl = db.collection("comment_history");
@@ -494,17 +427,13 @@ async function initMongoDB() {
         console.log("✓ Seeded initial comment reports into MongoDB Atlas.");
       }
     }
-
-    mongoLastError = null;
-  } else {
+  } catch (err) {
     isMongoConnected = false;
-    mongoLastError = primaryError ? primaryError.message : "Connection failed";
+    mongoLastError = err.message;
     console.error("************************************************************");
     console.error("❌ MONGODB ATLAS CONNECTION FAILED");
     console.error(`Error: ${mongoLastError}`);
-    if (detectedServerIp) console.error(`Server Egress IP: ${detectedServerIp}`);
-    console.error("Action Required: Ensure '0.0.0.0/0' is whitelisted in MongoDB Atlas Network Access.");
-    console.error("The server will run with local fallback, but Atlas is DISCONNECTED.");
+    console.error("Action Required: Ensure '0.0.0.0/0' is active in MongoDB Atlas Network Access.");
     console.error("************************************************************");
   }
 }
@@ -3911,17 +3840,20 @@ app.use((req, res) => {
   res.status(404).json({ message: "API route not found." });
 });
 
-// Server listener: await MongoDB connection before accepting requests
-async function startServer() {
-  console.log("Connecting to MongoDB Atlas...");
-  await initMongoDB();
+// Server listener: bind port immediately so Render health-check succeeds
+function startServer() {
   app.listen(PORT, () => {
     console.log("========================================");
-    console.log(`Multilingual & Subscription Server running on http://localhost:${PORT}`);
-    console.log(`Database: ${isMongoConnected ? "MongoDB Atlas (VERIFIED_ONLINE)" : "Local JSON Fallback"}`);
+    console.log(`Multilingual & Subscription Server listening on port ${PORT}`);
     console.log(`Video folder: ${VIDEOS_DIR}`);
     console.log(`Thumbnails folder: ${THUMBNAILS_DIR}`);
     console.log("========================================");
+  });
+
+  // Initiate MongoDB Atlas connection asynchronously
+  console.log("Connecting to MongoDB Atlas...");
+  initMongoDB().catch((err) => {
+    console.error("MongoDB Atlas connection attempt error:", err.message);
   });
 }
 
