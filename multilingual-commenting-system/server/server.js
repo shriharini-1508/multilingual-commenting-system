@@ -296,14 +296,29 @@ let meetingsColl = null;
 let meetingChatsColl = null;
 let isMongoConnected = false;
 let mongoLastError = null;
+let detectedServerIp = null;
+
+async function getEgressIp() {
+  if (detectedServerIp) return detectedServerIp;
+  try {
+    const res = await fetch("https://api.ipify.org?format=json", { signal: AbortSignal.timeout(4000) });
+    if (res.ok) {
+      const data = await res.json();
+      detectedServerIp = data.ip;
+      return detectedServerIp;
+    }
+  } catch (e) { }
+  return null;
+}
 
 function getMongoErrorAnalysis(errStr) {
   if (!errStr) return null;
   if (errStr.includes("SSL alert number 80") || errStr.includes("tlsv1 alert internal error")) {
     return {
       category: "TLS_HANDSHAKE_ERROR_SSL_ALERT_80",
-      reason: "Atlas TLS gateway rejected connection. The client IP is not whitelisted in MongoDB Atlas Network Access IP Access List. Cloud hosting platforms (like Render) use dynamic egress IP addresses.",
-      actionRequired: "Open MongoDB Atlas Console -> Security -> Network Access -> click '+ Add IP Address' -> select 'Allow Access From Anywhere' (0.0.0.0/0) -> Confirm."
+      reason: "Atlas TLS gateway rejected the connection. The server IP address is not whitelisted in MongoDB Atlas Network Access IP Access List.",
+      detectedEgressIp: detectedServerIp || "Dynamic Cloud Egress IP",
+      actionRequired: `In MongoDB Atlas Console -> Security -> Network Access -> click '+ Add IP Address' -> select 'Allow Access From Anywhere' (0.0.0.0/0)${detectedServerIp ? ` or add '${detectedServerIp}'` : ''} -> Confirm.`
     };
   }
   if (errStr.includes("Authentication failed") || errStr.includes("bad auth")) {
@@ -331,34 +346,76 @@ async function initMongoDB() {
   if (isMongoConnected) return;
   const rawUri = process.env.MONGO_URI;
   if (!rawUri) {
-    console.warn("⚠️ MONGO_URI not found in .env. Running on persistent local storage fallback.");
+    console.warn("⚠️ MONGO_URI not found in environment. Running on persistent local storage fallback.");
     return;
   }
+
+  // Detect server egress IP in parallel
+  getEgressIp().catch(() => {});
 
   // Robust URI Sanitization: strip quotes, trailing whitespace, and placeholder brackets
   let sanitizedUri = rawUri.trim().replace(/^["']|["']$/g, "").replace(/<([^>]+)>/g, "$1");
   const srvMatch = sanitizedUri.match(/^(mongodb(?:\+srv)?:\/\/)([^:]+):(.+)@([^/?#]+)(.*)$/);
+  let parsedUser = "";
+  let parsedPass = "";
+  let parsedHost = "";
+  let parsedRest = "";
+
   if (srvMatch) {
     const protocol = srvMatch[1];
-    const username = srvMatch[2];
-    let password = srvMatch[3];
-    const host = srvMatch[4];
-    const rest = srvMatch[5];
+    parsedUser = srvMatch[2];
+    parsedPass = srvMatch[3];
+    parsedHost = srvMatch[4];
+    parsedRest = srvMatch[5];
     try {
-      password = encodeURIComponent(decodeURIComponent(password));
+      parsedPass = encodeURIComponent(decodeURIComponent(parsedPass));
     } catch {
-      password = encodeURIComponent(password);
+      parsedPass = encodeURIComponent(parsedPass);
     }
-    sanitizedUri = `${protocol}${username}:${password}@${host}${rest}`;
+    sanitizedUri = `${protocol}${parsedUser}:${parsedPass}@${parsedHost}${parsedRest}`;
   }
 
-  try {
-    mongoClient = new MongoClient(sanitizedUri, {
+  const maskedUri = sanitizedUri.replace(/:[^:]*@/, ":****@");
+  console.log(`[MongoConnection] Attempting connection to Atlas: ${maskedUri}`);
+
+  async function attemptConnect(uriToTry, label) {
+    const client = new MongoClient(uriToTry, {
+      family: 4,
+      tls: true,
       serverSelectionTimeoutMS: 15000,
-      connectTimeoutMS: 15000,
-      tls: true
+      connectTimeoutMS: 15000
     });
-    await mongoClient.connect();
+    await client.connect();
+    await client.db("subscription_system").admin().ping();
+    return client;
+  }
+
+  let connectedClient = null;
+  let primaryError = null;
+
+  try {
+    connectedClient = await attemptConnect(sanitizedUri, "Primary URI");
+    console.log("✓ Primary MongoDB connection established successfully!");
+  } catch (err) {
+    primaryError = err;
+    console.warn(`[MongoConnection] Primary connection attempt failed: ${err.message}`);
+
+    // If connecting with SRV to cluster0, attempt direct replica-set seed fallback
+    if (sanitizedUri.includes("cluster0.lslab9n.mongodb.net")) {
+      const directUri = `mongodb://${parsedUser}:${parsedPass}@ac-opuscjt-shard-00-00.lslab9n.mongodb.net:27017,ac-opuscjt-shard-00-01.lslab9n.mongodb.net:27017,ac-opuscjt-shard-00-02.lslab9n.mongodb.net:27017/subscription_system?ssl=true&replicaSet=atlas-3e9yys-shard-0&authSource=admin&retryWrites=true&w=majority`;
+      const maskedDirect = directUri.replace(/:[^:]*@/, ":****@");
+      console.log(`[MongoConnection] Attempting direct replica-set seed fallback: ${maskedDirect}...`);
+      try {
+        connectedClient = await attemptConnect(directUri, "Direct Replica Set");
+        console.log("✓ Direct replica-set fallback connected successfully to Atlas!");
+      } catch (fallbackErr) {
+        console.error(`[MongoConnection] Direct fallback also failed: ${fallbackErr.message}`);
+      }
+    }
+  }
+
+  if (connectedClient) {
+    mongoClient = connectedClient;
     db = mongoClient.db("subscription_system");
     commentsColl = db.collection("comments");
     commentReportsColl = db.collection("comment_reports");
@@ -374,8 +431,12 @@ async function initMongoDB() {
     meetingsColl = db.collection("meetings");
     meetingChatsColl = db.collection("meeting_chats");
     isMongoConnected = true;
+    mongoLastError = null;
+
     const clusterName = sanitizedUri.match(/@([^/?]+)/)?.[1] || "Atlas Cluster";
+    console.log(`========================================`);
     console.log(`✓ Connected successfully to MongoDB Atlas database: subscription_system (${clusterName})`);
+    console.log(`========================================`);
 
     // Create indexes across all application collections
     await Promise.allSettled([
@@ -435,10 +496,16 @@ async function initMongoDB() {
     }
 
     mongoLastError = null;
-  } catch (err) {
+  } else {
     isMongoConnected = false;
-    mongoLastError = err.message;
-    console.error("❌ MongoDB Atlas connection error:", err.message);
+    mongoLastError = primaryError ? primaryError.message : "Connection failed";
+    console.error("************************************************************");
+    console.error("❌ MONGODB ATLAS CONNECTION FAILED");
+    console.error(`Error: ${mongoLastError}`);
+    if (detectedServerIp) console.error(`Server Egress IP: ${detectedServerIp}`);
+    console.error("Action Required: Ensure '0.0.0.0/0' is whitelisted in MongoDB Atlas Network Access.");
+    console.error("The server will run with local fallback, but Atlas is DISCONNECTED.");
+    console.error("************************************************************");
   }
 }
 
