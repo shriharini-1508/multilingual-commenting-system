@@ -4,6 +4,9 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import dns from "dns";
+import dnsPromises from "dns/promises";
+import net from "net";
+import tls from "tls";
 import { fileURLToPath } from "url";
 import "dotenv/config";
 import { MongoClient } from "mongodb";
@@ -1490,6 +1493,7 @@ app.get("/api/db/status", async (req, res) => {
     storageEngine: isVerified ? "MongoDB Atlas (Remote Cloud Database)" : "Local JSON Persistent Cache (Disk Fallback)",
     status: isVerified ? "VERIFIED_ONLINE" : "DISCONNECTED_FALLBACK_ACTIVE",
     latencyMs: isVerified ? latencyMs : null,
+    diagnoseUrl: "/api/db/diagnose",
     error: isVerified ? null : (analysis || { category: "DISCONNECTED", reason: mongoLastError || "Database offline" }),
     collections: activeCollections.length > 0 ? activeCollections : [
       "comments",
@@ -1506,6 +1510,142 @@ app.get("/api/db/status", async (req, res) => {
       "meeting_chats"
     ]
   });
+});
+
+// Comprehensive Database Diagnostic Pipeline (no credentials exposed)
+app.get("/api/db/diagnose", async (req, res) => {
+  const rawUri = process.env.MONGO_URI || "";
+  const report = {
+    timestamp: new Date().toISOString(),
+    environment: {
+      platform: process.platform,
+      nodeVersion: process.version,
+      mongoUriConfigured: !!rawUri
+    },
+    uriInspection: {},
+    network: {},
+    dns: {},
+    tcpHandshake: {},
+    tlsHandshake: {},
+    mongoDriverPing: {}
+  };
+
+  if (!rawUri) {
+    report.uriInspection.error = "MONGO_URI environment variable is missing";
+    return res.json(report);
+  }
+
+  // Safe URI inspection (no passwords/secrets returned)
+  const sanitized = rawUri.trim().replace(/^["']|["']$/g, "").replace(/<([^>]+)>/g, "$1");
+  const srvMatch = sanitized.match(/^(mongodb(?:\+srv)?:\/\/)([^:]+):(.+)@([^/?#]+)(.*)$/);
+  if (srvMatch) {
+    report.uriInspection = {
+      protocol: srvMatch[1].replace("://", ""),
+      username: srvMatch[2],
+      clusterHost: srvMatch[4],
+      database: srvMatch[5].split("?")[0].replace("/", "") || "admin",
+      params: srvMatch[5].includes("?") ? srvMatch[5].split("?")[1] : ""
+    };
+  } else {
+    report.uriInspection = {
+      format: "Standard/Custom URI format",
+      masked: sanitized.replace(/:[^:]*@/, ":****@")
+    };
+  }
+
+  // Detect server public egress IP via lightweight ping
+  try {
+    const ipRes = await fetch("https://api.ipify.org?format=json", { signal: AbortSignal.timeout(3000) });
+    if (ipRes.ok) {
+      const ipJson = await ipRes.json();
+      report.network.serverEgressIp = ipJson.ip;
+    }
+  } catch (ipErr) {
+    report.network.serverEgressIp = `Lookup note: ${ipErr.message}`;
+  }
+
+  // DNS SRV Check
+  const clusterHost = report.uriInspection.clusterHost || "cluster0.lslab9n.mongodb.net";
+  let discoveredShards = [];
+  try {
+    const srvRecords = await dnsPromises.resolveSrv(`_mongodb._tcp.${clusterHost}`);
+    report.dns.srvSuccess = true;
+    discoveredShards = srvRecords.map(s => `${s.name}:${s.port}`);
+    report.dns.discoveredShards = discoveredShards;
+  } catch (dnsErr) {
+    report.dns.srvSuccess = false;
+    report.dns.error = dnsErr.message;
+  }
+
+  // Test TCP & TLS Handshake directly against discovered shard
+  const targetShard = discoveredShards.length > 0
+    ? discoveredShards[0]
+    : `ac-opuscjt-shard-00-00.lslab9n.mongodb.net:27017`;
+
+  const [shardHost, shardPortStr] = targetShard.split(":");
+  const shardPort = parseInt(shardPortStr, 10) || 27017;
+
+  // Raw TCP
+  try {
+    const tcpStart = Date.now();
+    await new Promise((resolve, reject) => {
+      const sock = net.createConnection(shardPort, shardHost, () => {
+        report.tcpHandshake.success = true;
+        report.tcpHandshake.latencyMs = Date.now() - tcpStart;
+        report.tcpHandshake.target = `${shardHost}:${shardPort}`;
+        sock.destroy();
+        resolve();
+      });
+      sock.setTimeout(4000, () => { sock.destroy(); reject(new Error("TCP connection timed out")); });
+      sock.on("error", reject);
+    });
+  } catch (tcpErr) {
+    report.tcpHandshake.success = false;
+    report.tcpHandshake.error = tcpErr.message;
+  }
+
+  // Raw TLS with SNI
+  try {
+    const tlsStart = Date.now();
+    await new Promise((resolve, reject) => {
+      const tlsSock = tls.connect(shardPort, shardHost, { servername: shardHost }, () => {
+        report.tlsHandshake.success = true;
+        report.tlsHandshake.latencyMs = Date.now() - tlsStart;
+        report.tlsHandshake.protocol = tlsSock.getProtocol();
+        report.tlsHandshake.cipher = tlsSock.getCipher()?.name;
+        tlsSock.destroy();
+        resolve();
+      });
+      tlsSock.setTimeout(4000, () => { tlsSock.destroy(); reject(new Error("TLS connection timed out")); });
+      tlsSock.on("error", reject);
+    });
+  } catch (tlsErr) {
+    report.tlsHandshake.success = false;
+    report.tlsHandshake.error = tlsErr.message;
+    if (tlsErr.message.includes("SSL alert number 80") || tlsErr.message.includes("tlsv1 alert internal error")) {
+      report.tlsHandshake.analysis = "Atlas TLS proxy rejected this request. Client IP is not in Atlas Network Access IP Access List.";
+      report.tlsHandshake.actionRequired = `Whitelist '${report.network.serverEgressIp || "0.0.0.0/0"}' in MongoDB Atlas -> Security -> Network Access.`;
+    }
+  }
+
+  // Live Mongo Ping
+  try {
+    const testClient = new MongoClient(sanitized, {
+      family: 4,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000
+    });
+    await testClient.connect();
+    const pingRes = await testClient.db(report.uriInspection.database || "subscription_system").command({ ping: 1 });
+    report.mongoDriverPing.success = true;
+    report.mongoDriverPing.result = pingRes;
+    await testClient.close();
+  } catch (pingErr) {
+    report.mongoDriverPing.success = false;
+    report.mongoDriverPing.error = pingErr.message;
+  }
+
+  res.json(report);
 });
 
 // ======================================================
