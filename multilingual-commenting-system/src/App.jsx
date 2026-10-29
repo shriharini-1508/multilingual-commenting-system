@@ -27,7 +27,11 @@ const EDIT_DELETE_LIMIT = 15 * 60 * 1000; // 15 Minutes
 const RATE_LIMIT = 3;                     // Max 3 comments
 const RATE_WINDOW = 30 * 1000;            // in 30 Seconds
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_BASE || (
+  typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+    ? "http://localhost:5000/api"
+    : "/api"
+);
 
 /* Supported Languages */
 const LANGUAGES = [

@@ -38,6 +38,7 @@ app.use(express.json());
 // ======================================================
 
 const ROOT_DIR = path.join(__dirname, "..");
+const DIST_DIR = path.join(ROOT_DIR, "dist");
 const VIDEOS_DIR = path.join(ROOT_DIR, "public", "videos");
 const THUMBNAILS_DIR = path.join(ROOT_DIR, "public", "thumbnails");
 const DATA_DIR = path.join(__dirname, "data");
@@ -1422,8 +1423,12 @@ function generateInvoiceAndEmailReceipt(sub, tx) {
 // API ROUTES
 // ======================================================
 
-// Root Status
-app.get("/", (req, res) => {
+// Root & Health Status
+app.get(["/", "/api", "/api/status"], (req, res, next) => {
+  const indexPath = path.join(DIST_DIR, "index.html");
+  if (req.path === "/" && fs.existsSync(indexPath) && !req.headers.accept?.includes("application/json")) {
+    return res.sendFile(indexPath);
+  }
   const analysis = getMongoErrorAnalysis(mongoLastError);
   res.json({
     success: true,
@@ -3804,7 +3809,6 @@ app.use("/videos", express.static(VIDEOS_DIR));
 app.use("/thumbnails", express.static(THUMBNAILS_DIR));
 
 // Serve Frontend Production Build if present
-const DIST_DIR = path.join(ROOT_DIR, "dist");
 if (fs.existsSync(DIST_DIR)) {
   app.use(express.static(DIST_DIR));
   app.get("*", (req, res, next) => {
