@@ -245,9 +245,13 @@ const COMMENT_RATE_LIMIT_STORE = new Map();
 const MEETING_SIGNALS = new Map();
 const MEETING_CHATS = new Map();
 
-// Razorpay test credentials & test order store
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "rzp_test_AntigravityDev";
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "antigravity_secret_key_2026";
+// Environment mode check
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
+// Razorpay credentials & pending order store
+// In production, secrets MUST be supplied via environment variables; fallbacks are forbidden.
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || (IS_PRODUCTION ? "" : "rzp_test_AntigravityDev");
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || (IS_PRODUCTION ? "" : "antigravity_secret_key_2026");
 const PENDING_ORDERS = new Map();
 
 // ======================================================
@@ -1441,7 +1445,7 @@ function generateInvoiceAndEmailReceipt(sub, tx) {
 // Root & Health Status
 app.get(["/", "/api", "/api/status"], (req, res, next) => {
   const indexPath = path.join(DIST_DIR, "index.html");
-  if (req.path === "/" && fs.existsSync(indexPath) && !req.headers.accept?.includes("application/json")) {
+  if (req.path === "/" && fs.existsSync(indexPath) && req.headers.accept?.includes("text/html")) {
     return res.sendFile(indexPath);
   }
   const analysis = getMongoErrorAnalysis(mongoLastError);
@@ -2182,6 +2186,14 @@ app.post("/api/payment/create-order", async (req, res) => {
       });
     }
 
+    // Fail securely if production secrets are missing
+    if (IS_PRODUCTION && (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET)) {
+      return res.status(500).json({
+        success: false,
+        message: "Payment gateway configuration error. Razorpay credentials are not configured in production."
+      });
+    }
+
     // Generate compliant Razorpay order ID
     const timestamp = Date.now();
     const randomHex = crypto.randomBytes(4).toString("hex");
@@ -2255,21 +2267,74 @@ app.post("/api/payment/verify", async (req, res) => {
       });
     }
 
-    // Cryptographic signature check (HMAC SHA-256)
-    // Accepts legitimate Razorpay signature OR test signature payload
-    if (razorpay_order_id && razorpay_signature && amount > 0) {
+    // Cryptographic signature & order ownership verification
+    if (amount > 0) {
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        return res.status(400).json({
+          success: false,
+          message: "Payment verification failed: razorpay_order_id, razorpay_payment_id, and razorpay_signature are required for paid subscriptions."
+        });
+      }
+
+      // Validate that the order exists in pending orders
+      const pendingOrder = PENDING_ORDERS.get(razorpay_order_id);
+      if (!pendingOrder) {
+        return res.status(400).json({
+          success: false,
+          message: "Payment verification failed: Order reference not found or has expired."
+        });
+      }
+
+      // Validate order ownership, plan, cycle, and amount
+      if (pendingOrder.userId !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: "Payment verification failed: Order does not belong to the requesting user."
+        });
+      }
+      if (pendingOrder.plan !== plan) {
+        return res.status(400).json({
+          success: false,
+          message: `Payment verification failed: Order plan (${pendingOrder.plan}) does not match requested plan (${plan}).`
+        });
+      }
+      if (pendingOrder.billingCycle !== cycle) {
+        return res.status(400).json({
+          success: false,
+          message: `Payment verification failed: Order billing cycle (${pendingOrder.billingCycle}) does not match requested cycle (${cycle}).`
+        });
+      }
+      if (Number(pendingOrder.amount) !== Number(amount)) {
+        return res.status(400).json({
+          success: false,
+          message: "Payment verification failed: Order amount mismatch."
+        });
+      }
+
+      // Fail securely in production if secret is missing
+      if (IS_PRODUCTION && !RAZORPAY_KEY_SECRET) {
+        return res.status(500).json({
+          success: false,
+          message: "Payment verification unavailable: Razorpay secret is not configured in production."
+        });
+      }
+
       const generatedSignature = crypto
         .createHmac("sha256", RAZORPAY_KEY_SECRET)
         .update(`${razorpay_order_id}|${razorpay_payment_id}`)
         .digest("hex");
 
-      // Verify either matches real HMAC or test mode signature format
-      const isTestSignatureValid =
-        razorpay_signature === generatedSignature ||
-        razorpay_signature.startsWith("test_sig_") ||
-        razorpay_signature === `sig_${razorpay_order_id}_${razorpay_payment_id}`;
+      // In production: strictly enforce real HMAC SHA-256 signature
+      // In development/test mode: also permit test simulation signatures for the verified pending order
+      let isSignatureValid = razorpay_signature === generatedSignature;
+      if (!IS_PRODUCTION) {
+        isSignatureValid =
+          isSignatureValid ||
+          razorpay_signature === `test_sig_${razorpay_order_id}` ||
+          razorpay_signature === `sig_${razorpay_order_id}_${razorpay_payment_id}`;
+      }
 
-      if (!isTestSignatureValid) {
+      if (!isSignatureValid) {
         // Record verification failure
         await saveTransactionRecord({
           invoiceNumber: `INV-FAIL-${Date.now()}`,
@@ -2574,6 +2639,14 @@ app.post("/api/subscription/switch", async (req, res) => {
     const validPlans = Object.keys(MEMBERSHIP_PLANS);
     const targetPlan = validPlans.includes(plan) ? plan : "Free";
     const planDef = MEMBERSHIP_PLANS[targetPlan];
+
+    // In production, prevent activating paid plans for free via the simulator
+    if (IS_PRODUCTION && targetPlan !== "Free") {
+      return res.status(403).json({
+        success: false,
+        message: "Free plan switching to paid tiers is disabled in production. Please use the official subscription checkout."
+      });
+    }
 
     let expiryDate = Date.now() + (daysValid || 30) * 24 * 60 * 60 * 1000;
     if (isExpired) {
